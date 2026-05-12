@@ -1,0 +1,36 @@
+name: Daily Job Alert
+
+on:
+  schedule:
+    - cron: '0 13 * * *'   # runs at 9am ET every day
+  workflow_dispatch:        # lets you trigger manually from the Actions tab
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # needed to commit the CSV back to the repo
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Run job alert
+        run: python main.py
+
+      - name: Commit results
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add all_jobs.csv seen_jobs.txt
+          # Only commit if something actually changed — avoids "nothing to commit" errors
+          git diff --staged --quiet || git commit -m "Update job listings [skip ci]"
+          git push
