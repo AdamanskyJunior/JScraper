@@ -37,5 +37,17 @@ NBCUniversal::744000123468390
 NBCUniversal::744000123798039
 NBCUniversal::744000124011505
 NBCUniversal::744000124141004
+Paramount::1373807100
+Roku::ad-sales-partnerships-manager-new-york-united-states
+Roku::director-commerce-and-performance-partnerships-austin-texas-united-states
+Roku::director-commerce-and-performance-partnerships-chicago-illinois-united-states
+Roku::director-commerce-and-performance-partnerships-new-york-united-states
+Roku::director-commerce-and-performance-partnerships-santa-monica-california-united-st
+Roku::director-head-of-industry-media-and-entertainment-santa-monica-california-united
+Roku::senior-product-partner-manager-austin-texas-united-states
 Spotify::5fce53f3-83dd-4b6a-9058-a2c295560966
 Spotify::aa4220b2-b5fd-4db6-9ef6-2b34fde9f6ef
+Versant::744000118485332
+Versant::744000118935010
+Versant::744000119617273
+Versant::744000123544300
