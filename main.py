@@ -41,7 +41,7 @@ EXCLUDE_KEYWORDS = [
 # ── COMPANIES ─────────────────────────────────────────────────────────────────
 
 COMPANIES = [
-    # Workday
+    # Workday (CXS JSON API)
     {'name': 'AMC Networks',          'ats': 'workday',         'tenant': 'amcn',       'instance': 'wd5', 'job_board': 'amcnetworks'},
     {'name': 'Disney',                'ats': 'workday',         'tenant': 'disney',     'instance': 'wd5', 'job_board': 'disneycareer'},
     {'name': 'Fox',                   'ats': 'workday',         'tenant': 'fox',        'instance': 'wd1', 'job_board': 'Domestic'},
@@ -54,15 +54,15 @@ COMPANIES = [
     {'name': 'Spotify',               'ats': 'lever',           'slug': 'spotify'},
     # SmartRecruiters
     {'name': 'NBCUniversal',          'ats': 'smartrecruiters', 'company_id': 'NBCUniversal3'},
-    # Teamtailor (custom-domain career sites)
-    {'name': 'Roku',                  'ats': 'teamtailor',      'url': 'https://www.weareroku.com'},
+    {'name': 'Versant',               'ats': 'smartrecruiters', 'company_id': 'Versant3'},
+    # ClinchTalent (Roku's career platform — jobs at /jobs/search?page=N)
+    {'name': 'Roku',                  'ats': 'clinch',          'url': 'https://www.weareroku.com'},
+    # Teamtailor
     {'name': 'BritBox',               'ats': 'teamtailor',      'url': 'https://jointheteam.britboxinternational.com'},
-    # Oracle Taleo (server-rendered HTML)
-    {'name': 'Paramount',             'ats': 'taleo',           'url': 'https://careers.paramount.com/go/All-Current-Job-Opportunities/8710000/'},
+    # SAP SuccessFactors (Paramount — links are /job/title/ID/, NOT /go/title/ID/)
+    {'name': 'Paramount',             'ats': 'successfactors',  'url': 'https://careers.paramount.com/go/All-Current-Job-Opportunities/8710000/'},
     # Apple (search page HTML scrape)
     {'name': 'Apple',                 'ats': 'apple'},
-    # Generic web scrape
-    {'name': 'Versant',               'ats': 'webscrape',       'url': 'https://careers.versantmedia.com/find-a-job'},
 ]
 
 
@@ -132,10 +132,10 @@ def fetch_jobs(company: dict) -> list:
     if ats == 'greenhouse':      return fetch_greenhouse(company['slug'])
     if ats == 'lever':           return fetch_lever(company['slug'])
     if ats == 'smartrecruiters': return fetch_smartrecruiters(company['company_id'])
+    if ats == 'clinch':          return fetch_clinch(company['url'])
     if ats == 'teamtailor':      return fetch_teamtailor(company['url'])
-    if ats == 'taleo':           return fetch_taleo(company['url'])
+    if ats == 'successfactors':  return fetch_successfactors(company['url'])
     if ats == 'apple':           return fetch_apple()
-    if ats == 'webscrape':       return fetch_webscrape(company['url'])
     return []
 
 
@@ -144,10 +144,11 @@ def fetch_jobs(company: dict) -> list:
 def fetch_workday(company: dict) -> list:
     """
     Paginate through ALL open roles using Workday's CXS POST API.
-    Python's requests.Session() properly handles the CSRF cookie handshake
-    that browser-based environments (like Google Apps Script) cannot do.
+    Python's requests.Session() handles the CSRF cookie/header handshake.
+    Key fix vs previous versions: the CALYPSO_CSRF_TOKEN cookie value must
+    also be forwarded as an X-Calypso-Csrf-Token request header.
     """
-    session  = requests.Session()
+    session = requests.Session()
     session.headers.update(BROWSER_HEADERS)
 
     tenant    = company['tenant']
@@ -155,12 +156,25 @@ def fetch_workday(company: dict) -> list:
     job_board = company['job_board']
     base_url  = f"https://{tenant}.{instance}.myworkdayjobs.com"
     api_url   = f"{base_url}/wday/cxs/{tenant}/{job_board}/jobs"
+    prime_url = f"{base_url}/en-US/{job_board}/jobs"
 
-    # Prime the session — sets CSRF cookies used in subsequent POST requests
+    # Prime the session — sets CSRF cookies required for POST requests
     try:
-        session.get(f"{base_url}/en-US/{job_board}/jobs", timeout=20)
+        prime_resp = session.get(prime_url, timeout=20)
+        print(f"    Prime: HTTP {prime_resp.status_code}")
     except Exception as e:
-        print(f"    Session prime warning: {e}")
+        print(f"    Prime failed: {e}")
+        return []
+
+    # Workday requires the CSRF token both as a cookie AND as a request header
+    csrf_token = ''
+    for cookie in session.cookies:
+        if 'csrf' in cookie.name.lower() or 'calypso' in cookie.name.lower():
+            csrf_token = cookie.value
+            print(f"    CSRF cookie found: {cookie.name}")
+            break
+    if not csrf_token:
+        print(f"    WARNING: No CSRF cookie found; cookies present: {[c.name for c in session.cookies]}")
 
     results    = []
     seen_paths = set()
@@ -168,17 +182,30 @@ def fetch_workday(company: dict) -> list:
 
     for offset in range(0, 2000, limit):
         try:
+            post_headers = {
+                'Accept':           'application/json',
+                'Content-Type':     'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Referer':          prime_url,
+                'Origin':           base_url,
+            }
+            if csrf_token:
+                post_headers['X-Calypso-Csrf-Token'] = csrf_token
+
             resp = session.post(
                 api_url,
                 json={'appliedFacets': {}, 'limit': limit, 'offset': offset, 'searchText': ''},
-                headers={'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+                headers=post_headers,
                 timeout=30,
             )
+            print(f"    Offset {offset}: HTTP {resp.status_code}")
             if resp.status_code != 200:
-                print(f"    HTTP {resp.status_code} at offset {offset}")
+                print(f"    Response body: {resp.text[:300]}")
                 break
 
-            postings = resp.json().get('jobPostings', [])
+            data     = resp.json()
+            postings = data.get('jobPostings', [])
+            print(f"    → {len(postings)} postings")
             if not postings:
                 break
 
@@ -264,6 +291,7 @@ def fetch_smartrecruiters(company_id: str) -> list:
                     f"?limit=100&q={requests.utils.quote(q)}")
             resp = requests.get(url, headers={**BROWSER_HEADERS, 'Accept': 'application/json'}, timeout=15)
             if resp.status_code != 200:
+                print(f"    SmartRecruiters {company_id} '{q}': HTTP {resp.status_code}")
                 continue
             for j in resp.json().get('content', []):
                 jid = j.get('id')
@@ -280,7 +308,64 @@ def fetch_smartrecruiters(company_id: str) -> list:
                     'id':         jid,
                 })
         except Exception as e:
-            print(f"    SmartRecruiters {q}: {e}")
+            print(f"    SmartRecruiters {company_id} '{q}': {e}")
+    return results
+
+
+# ── ClinchTalent (Roku) ───────────────────────────────────────────────────────
+
+def fetch_clinch(base_url: str) -> list:
+    """
+    ClinchTalent career sites (used by Roku).
+    Jobs are listed at /jobs/search?page=N in a paginated HTML table.
+    Job detail links match /jobs/[slug-with-location].
+    """
+    clean   = base_url.rstrip('/')
+    results = []
+    seen    = set()
+
+    for page in range(1, 100):
+        url = f"{clean}/jobs/search?page={page}"
+        try:
+            resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15)
+            if resp.status_code != 200:
+                print(f"    Clinch {clean}: HTTP {resp.status_code} on page {page}")
+                break
+            soup   = BeautifulSoup(resp.text, 'html.parser')
+            before = len(results)
+
+            for a in soup.find_all('a', href=re.compile(r'/jobs/[^?#]+')):
+                href  = a.get('href', '')
+                title = a.get_text(strip=True)
+                if not title or not (5 <= len(title) <= 200):
+                    continue
+                link  = href if href.startswith('http') else clean + href
+                jid   = href.rstrip('/').split('/')[-1]
+                if not jid or len(jid) < 5 or jid in seen:
+                    continue
+                seen.add(jid)
+
+                # Location lives in a sibling <td> in the same table row
+                parent_row = a.find_parent('tr')
+                location   = ''
+                if parent_row:
+                    cells = parent_row.find_all('td')
+                    if len(cells) >= 2:
+                        location = cells[1].get_text(strip=True)
+
+                results.append({
+                    'title': title, 'location': location, 'url': link,
+                    'posted': '', 'department': '', 'id': jid,
+                })
+
+            if len(results) == before:
+                break    # no new jobs on this page — done
+            time.sleep(0.3)
+
+        except Exception as e:
+            print(f"    Clinch {clean}: {e}")
+            break
+
     return results
 
 
@@ -335,44 +420,77 @@ def fetch_teamtailor(base_url: str) -> list:
         return []
 
 
-# ── Oracle Taleo (Paramount) ──────────────────────────────────────────────────
+# ── SAP SuccessFactors (Paramount) ────────────────────────────────────────────
 
-def fetch_taleo(all_jobs_url: str) -> list:
+def fetch_successfactors(all_jobs_url: str) -> list:
     """
-    Paramount uses Oracle Taleo Business Edition, which renders server-side HTML.
-    Paginate through 25-job pages using ?start=N until a page yields no new jobs.
+    SAP SuccessFactors career sites (used by Paramount).
+    Job links match /job/[url-encoded-title-location]/[numeric-id]/
+    (NOT /go/... which is navigation — the old Taleo fetcher had the wrong regex.)
+    Paginated via ?start=N at 25 jobs per page.
     """
-    base_origin = re.match(r'^https?://[^/]+', all_jobs_url).group(0)
     seen    = set()
     results = []
 
-    for start in range(0, 500, 25):
+    for start in range(0, 1000, 25):
         url = all_jobs_url if start == 0 else f"{all_jobs_url}?start={start}"
         try:
             resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15)
             if resp.status_code != 200:
+                print(f"    SuccessFactors: HTTP {resp.status_code}")
                 break
             soup   = BeautifulSoup(resp.text, 'html.parser')
             before = len(results)
-            for a in soup.find_all('a', href=re.compile(r'/go/.+/\d+')):
+
+            for a in soup.find_all('a', href=re.compile(r'/job/.+/\d+')):
                 href  = a.get('href', '')
                 title = a.get_text(strip=True)
                 if not title or len(title) < 5:
                     continue
-                full_url = href if href.startswith('http') else base_origin + href
-                jid      = href.rstrip('/').split('/')[-1]
+
+                # Extract numeric job ID
+                jid_match = re.search(r'/(\d{6,})/?$', href)
+                if not jid_match:
+                    continue
+                jid = jid_match.group(1)
                 if jid in seen:
                     continue
                 seen.add(jid)
+
+                full_url = href if href.startswith('http') else 'https://careers.paramount.com' + href
+
+                # Pull location and date from the enclosing list item text
+                parent   = a.find_parent('li')
+                location = ''
+                posted   = ''
+                if parent:
+                    text = parent.get_text(' ', strip=True)
+                    # Locations look like "New York, NY, US, 10036" or "Los Angeles, CA, US, 90038"
+                    loc_m = re.search(
+                        r'([A-Za-z][A-Za-z\s\-]+,\s*[A-Z]{2},\s*(?:US|CA|GB|AU|PL|MX)[,\s])',
+                        text
+                    )
+                    if loc_m:
+                        location = loc_m.group(1).strip().rstrip(',')
+                    # Dates look like "May 9, 2026"
+                    date_m = re.search(
+                        r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}',
+                        text
+                    )
+                    if date_m:
+                        posted = date_m.group(0)
+
                 results.append({
-                    'title': title, 'location': 'United States',
-                    'url': full_url, 'posted': '', 'department': '', 'id': jid,
+                    'title': title, 'location': location, 'url': full_url,
+                    'posted': posted, 'department': '', 'id': jid,
                 })
+
             if len(results) == before:
-                break            # no new jobs on this page — done
+                break          # no new jobs on this page — done
             time.sleep(0.5)
+
         except Exception as e:
-            print(f"    Taleo: {e}")
+            print(f"    SuccessFactors: {e}")
             break
 
     return results
@@ -408,7 +526,6 @@ def fetch_apple() -> list:
                 seen.add(jid)
                 title    = a.get_text(strip=True)
                 full_url = f"https://jobs.apple.com{href}" if not href.startswith('http') else href
-                # Location is typically in a sibling element; grab what we can
                 parent   = a.find_parent()
                 loc_el   = parent.find(class_=re.compile(r'location|city', re.I)) if parent else None
                 location = loc_el.get_text(strip=True) if loc_el else ''
@@ -420,38 +537,6 @@ def fetch_apple() -> list:
             print(f"    Apple '{kw}': {e}")
 
     return results
-
-
-# ── Generic web scrape ────────────────────────────────────────────────────────
-
-def fetch_webscrape(url: str) -> list:
-    try:
-        resp = requests.get(url, headers=BROWSER_HEADERS, timeout=15)
-        if resp.status_code != 200:
-            print(f"    WebScrape: HTTP {resp.status_code}")
-            return []
-        soup    = BeautifulSoup(resp.text, 'html.parser')
-        results = []
-        seen    = set()
-        for a in soup.find_all('a', href=True):
-            title = a.get_text(strip=True)
-            if not title or not (10 <= len(title) <= 120):
-                continue
-            if not any(kw in title.lower() for kw in TITLE_KEYWORDS):
-                continue
-            href     = a['href']
-            full_url = href if href.startswith('http') else url.rstrip('/') + '/' + href.lstrip('/')
-            if full_url in seen:
-                continue
-            seen.add(full_url)
-            results.append({
-                'title': title, 'location': '', 'url': full_url,
-                'posted': '', 'department': '', 'id': title[:50],
-            })
-        return results
-    except Exception as e:
-        print(f"    WebScrape: {e}")
-        return []
 
 
 # ── STATE / CSV ───────────────────────────────────────────────────────────────
@@ -496,7 +581,7 @@ def main():
 
     for co in COMPANIES:
         try:
-            print(f"→ {co['name']}")
+            print(f"→ {co['name']} [{co['ats']}]")
             jobs    = fetch_jobs(co)
             matched = [j for j in jobs if is_match(j['title']) and is_us_location(j['location'])]
             added   = 0
@@ -526,4 +611,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
