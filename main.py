@@ -143,13 +143,17 @@ def fetch_jobs(company: dict) -> list:
 
 def fetch_workday(company: dict) -> list:
     """
-    Paginate through ALL open roles using Workday's CXS POST API.
-    Python's requests.Session() handles the CSRF cookie/header handshake.
-    Key fix vs previous versions: the CALYPSO_CSRF_TOKEN cookie value must
-    also be forwarded as an X-Calypso-Csrf-Token request header.
+    Use Playwright (headless Chromium) to establish a real browser session on
+    the Workday jobs page — this handles the JS-based CSRF/cookie setup that
+    plain requests cannot replicate.  Then paginate via fetch() injected into
+    the live browser context so the browser automatically sends the correct
+    cookies and CSRF headers; no manual token extraction needed.
     """
-    session = requests.Session()
-    session.headers.update(BROWSER_HEADERS)
+    try:
+        from playwright.sync_api import sync_playwright, TimeoutError as PwTimeout
+    except ImportError:
+        print("    Playwright not installed — skipping Workday")
+        return []
 
     tenant    = company['tenant']
     instance  = company['instance']
@@ -158,80 +162,92 @@ def fetch_workday(company: dict) -> list:
     api_url   = f"{base_url}/wday/cxs/{tenant}/{job_board}/jobs"
     prime_url = f"{base_url}/en-US/{job_board}/jobs"
 
-    # Prime the session — sets CSRF cookies required for POST requests
-    try:
-        prime_resp = session.get(prime_url, timeout=20)
-        print(f"    Prime: HTTP {prime_resp.status_code}")
-    except Exception as e:
-        print(f"    Prime failed: {e}")
-        return []
+    all_postings = []
+    seen_paths   = set()
+    limit        = 100
 
-    # Workday requires the CSRF token both as a cookie AND as a request header
-    csrf_token = ''
-    for cookie in session.cookies:
-        if 'csrf' in cookie.name.lower() or 'calypso' in cookie.name.lower():
-            csrf_token = cookie.value
-            print(f"    CSRF cookie found: {cookie.name}")
-            break
-    if not csrf_token:
-        print(f"    WARNING: No CSRF cookie found; cookies present: {[c.name for c in session.cookies]}")
-
-    results    = []
-    seen_paths = set()
-    limit      = 100
-
-    for offset in range(0, 2000, limit):
-        try:
-            post_headers = {
-                'Accept':           'application/json',
-                'Content-Type':     'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Referer':          prime_url,
-                'Origin':           base_url,
-            }
-            if csrf_token:
-                post_headers['X-Calypso-Csrf-Token'] = csrf_token
-
-            resp = session.post(
-                api_url,
-                json={'appliedFacets': {}, 'limit': limit, 'offset': offset, 'searchText': ''},
-                headers=post_headers,
-                timeout=30,
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(
+            headless=True,
+            args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+        )
+        context = browser.new_context(
+            user_agent=(
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             )
-            print(f"    Offset {offset}: HTTP {resp.status_code}")
-            if resp.status_code != 200:
-                print(f"    Response body: {resp.text[:300]}")
-                break
+        )
+        page = context.new_page()
 
-            data     = resp.json()
-            postings = data.get('jobPostings', [])
-            print(f"    → {len(postings)} postings")
-            if not postings:
-                break
-
-            for j in postings:
-                path = j.get('externalPath', '')
-                if not path or path in seen_paths:
-                    continue
-                seen_paths.add(path)
-                results.append({
-                    'title':      j.get('title', ''),
-                    'location':   j.get('locationsText', ''),
-                    'url':        base_url + path,
-                    'posted':     j.get('postedOn', ''),
-                    'department': '',
-                    'id':         path.split('/')[-1] or path[:60],
-                })
-
-            if len(postings) < limit:
-                break
-            time.sleep(0.5)
-
+        # Load the jobs listing page — Workday sets all necessary cookies/CSRF here
+        try:
+            page.goto(prime_url, wait_until='networkidle', timeout=45000)
+            page.wait_for_timeout(2000)
+            print(f"    Browser loaded: {prime_url}")
+        except PwTimeout:
+            print(f"    Timeout loading {prime_url} (continuing anyway)")
         except Exception as e:
-            print(f"    Error at offset {offset}: {e}")
-            break
+            print(f"    Page load error: {e}")
 
-    return results
+        # Paginate by calling fetch() from within the browser context.
+        # Because the browser already has valid session cookies + CSRF state,
+        # the Workday API accepts these requests without any manual token handling.
+        for offset in range(0, 2000, limit):
+            try:
+                result = page.evaluate(f"""
+                    async () => {{
+                        const resp = await fetch('{api_url}', {{
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {{
+                                'Accept':       'application/json',
+                                'Content-Type': 'application/json',
+                            }},
+                            body: JSON.stringify({{
+                                appliedFacets: {{}},
+                                limit:  {limit},
+                                offset: {offset},
+                                searchText: ''
+                            }})
+                        }});
+                        if (!resp.ok) return {{ error: resp.status, body: await resp.text() }};
+                        return await resp.json();
+                    }}
+                """)
+                if not result:
+                    print(f"    Offset {offset}: null result")
+                    break
+                if 'error' in result:
+                    print(f"    Offset {offset}: HTTP {result.get('error')} — {str(result.get('body',''))[:200]}")
+                    break
+                postings = result.get('jobPostings', [])
+                print(f"    Offset {offset}: {len(postings)} postings")
+                if not postings:
+                    break
+                for j in postings:
+                    path = j.get('externalPath', '')
+                    if not path or path in seen_paths:
+                        continue
+                    seen_paths.add(path)
+                    all_postings.append({
+                        'title':      j.get('title', ''),
+                        'location':   j.get('locationsText', ''),
+                        'url':        base_url + path,
+                        'posted':     j.get('postedOn', ''),
+                        'department': '',
+                        'id':         path.split('/')[-1] or path[:60],
+                    })
+                if len(postings) < limit:
+                    break
+                time.sleep(0.3)
+            except Exception as e:
+                print(f"    Offset {offset} error: {e}")
+                break
+
+        browser.close()
+
+    print(f"    Total collected: {len(all_postings)}")
+    return all_postings
 
 
 # ── Greenhouse ────────────────────────────────────────────────────────────────
