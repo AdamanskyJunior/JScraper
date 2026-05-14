@@ -38,6 +38,8 @@ NBCUniversal::744000123798039
 NBCUniversal::744000124011505
 NBCUniversal::744000124141004
 Paramount::1373807100
+Paramount::1382820200
+Paramount::1390724500
 Roku::ad-sales-partnerships-manager-new-york-united-states
 Roku::director-commerce-and-performance-partnerships-austin-texas-united-states
 Roku::director-commerce-and-performance-partnerships-chicago-illinois-united-states
@@ -51,3 +53,5 @@ Versant::744000118485332
 Versant::744000118935010
 Versant::744000119617273
 Versant::744000123544300
+Versant::744000126360945
+Versant::744000126362982
