@@ -30,7 +30,9 @@ Apple::200664793
 Apple::200664797
 Apple::200665806
 Apple::200667085
+Apple::200667579
 BritBox::7548758-senior-manager-social-media
+BritBox::7885552-senior-manager-content-acquisitions
 Crunchyroll::7376786
 Crunchyroll::7376869
 Crunchyroll::7376872
@@ -56,6 +58,7 @@ NBCUniversal::744000129501834
 NBCUniversal::744000129800879
 NBCUniversal::744000130877311
 NBCUniversal::744000131179965
+NBCUniversal::744000131241059
 Paramount::1361114400
 Paramount::1367475300
 Paramount::1373314500
