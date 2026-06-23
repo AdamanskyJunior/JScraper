@@ -97,6 +97,7 @@ Roku::director-commerce-and-performance-partnerships-santa-monica-california-uni
 Roku::director-head-of-industry-media-and-entertainment-santa-monica-california-united
 Roku::senior-product-partner-manager-austin-texas-united-states
 Roku::sr-manager-customer-acquisition-paid-media-new-york-united-states
+Spotify::22fedc8b-caf2-416a-9e2d-37f9a04f9973
 Spotify::5fce53f3-83dd-4b6a-9058-a2c295560966
 Spotify::aa4220b2-b5fd-4db6-9ef6-2b34fde9f6ef
 Spotify::b66e964c-fbb5-4845-b250-1412b00f0b81
