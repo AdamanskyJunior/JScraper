@@ -38,6 +38,8 @@ Apple::200669935
 Apple::200670595
 Apple::200670697
 Apple::200670844
+Apple::200672000
+Apple::200672003
 BritBox::7548758-senior-manager-social-media
 BritBox::7885552-senior-manager-content-acquisitions
 BritBox::8018053-vp-business-development-partnerships
@@ -109,6 +111,7 @@ Roku::director-commerce-and-performance-partnerships-chicago-illinois-united-sta
 Roku::director-commerce-and-performance-partnerships-new-york-united-states
 Roku::director-commerce-and-performance-partnerships-santa-monica-california-united-st
 Roku::director-head-of-industry-media-and-entertainment-santa-monica-california-united
+Roku::head-of-content-innovation-santa-monica-california-united-states
 Roku::senior-product-partner-manager-austin-texas-united-states
 Roku::sr-manager-customer-acquisition-paid-media-new-york-united-states
 Spotify::22fedc8b-caf2-416a-9e2d-37f9a04f9973
@@ -165,3 +168,4 @@ Versant::744000135578825
 Versant::744000135579259
 Versant::744000135580242
 Versant::744000135580424
+Versant::744000137195400
