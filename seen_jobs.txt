@@ -44,7 +44,9 @@ Apple::200672003
 Apple::200672235
 Apple::200672848
 Apple::200674557
+Apple::200674696
 Apple::200674755
+Apple::200675559
 BritBox::7548758-senior-manager-social-media
 BritBox::7885552-senior-manager-content-acquisitions
 BritBox::8018053-vp-business-development-partnerships
@@ -123,9 +125,11 @@ Paramount::1410678800
 Paramount::1411149300
 Paramount::1412395500
 Paramount::1412715300
+Paramount::1415719100
 Roku::ad-partner-solutions-manager-new-york-united-states-c2889b69-a620-4ba2-a6f8-c2dc
 Roku::ad-product-marketing-manager-commerce-media-new-york-united-states
 Roku::ad-sales-partnerships-manager-new-york-united-states
+Roku::ads-partner-solutions-manager-new-york-united-states
 Roku::branded-content-project-manager-santa-monica-california-united-states
 Roku::director-commerce-and-performance-partnerships-austin-texas-united-states
 Roku::director-commerce-and-performance-partnerships-chicago-illinois-united-states
@@ -193,3 +197,4 @@ Versant::744000135580424
 Versant::744000137195400
 Versant::744000138332529
 Versant::744000138668142
+Versant::744000141353654
