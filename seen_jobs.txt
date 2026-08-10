@@ -145,6 +145,7 @@ Roku::director-commerce-and-performance-partnerships-new-york-united-states
 Roku::director-commerce-and-performance-partnerships-santa-monica-california-united-st
 Roku::director-head-of-industry-media-and-entertainment-santa-monica-california-united
 Roku::head-of-content-innovation-santa-monica-california-united-states
+Roku::senior-business-development-manager-retail-media-partnerships-bd-new-york-united
 Roku::senior-product-partner-manager-austin-texas-united-states
 Roku::sr-manager-customer-acquisition-paid-media-new-york-united-states
 Spotify::22fedc8b-caf2-416a-9e2d-37f9a04f9973
@@ -209,3 +210,5 @@ Versant::744000141353654
 Versant::744000141781338
 Versant::744000142044699
 Versant::744000142202269
+Versant::744000142653844
+Versant::744000142655432
