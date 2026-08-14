@@ -149,6 +149,7 @@ Roku::director-commerce-and-performance-partnerships-chicago-illinois-united-sta
 Roku::director-commerce-and-performance-partnerships-new-york-united-states
 Roku::director-commerce-and-performance-partnerships-santa-monica-california-united-st
 Roku::director-head-of-industry-media-and-entertainment-santa-monica-california-united
+Roku::head-of-agency-partnerships-new-york-united-states
 Roku::head-of-content-innovation-santa-monica-california-united-states
 Roku::senior-business-development-manager-retail-media-partnerships-bd-new-york-united
 Roku::senior-product-partner-manager-austin-texas-united-states
@@ -220,3 +221,4 @@ Versant::744000142655432
 Versant::744000143127695
 Versant::744000143161689
 Versant::744000143161819
+Versant::744000143511826
