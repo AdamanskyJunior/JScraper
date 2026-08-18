@@ -107,6 +107,8 @@ NBCUniversal::744000142069799
 NBCUniversal::744000143176259
 NBCUniversal::744000143182849
 NBCUniversal::744000143544388
+NBCUniversal::744000143875339
+NBCUniversal::744000143917699
 Paramount::1361114400
 Paramount::1367475300
 Paramount::1373314500
@@ -146,6 +148,7 @@ Roku::ad-partner-solutions-manager-new-york-united-states-c2889b69-a620-4ba2-a6f
 Roku::ad-product-marketing-manager-commerce-media-new-york-united-states
 Roku::ad-sales-partnerships-manager-new-york-united-states
 Roku::ads-partner-solutions-manager-new-york-united-states
+Roku::ads-partner-solutions-manager-programmatic-commerce-new-york-united-states
 Roku::branded-content-project-manager-santa-monica-california-united-states
 Roku::director-commerce-and-performance-partnerships-austin-texas-united-states
 Roku::director-commerce-and-performance-partnerships-chicago-illinois-united-states
