@@ -48,6 +48,8 @@ Apple::200674557
 Apple::200674696
 Apple::200674755
 Apple::200675559
+Apple::200675648
+Apple::200679078
 BritBox::7548758-senior-manager-social-media
 BritBox::7885552-senior-manager-content-acquisitions
 BritBox::8018053-vp-business-development-partnerships
@@ -146,6 +148,7 @@ Paramount::1418224100
 Paramount::1418301400
 Paramount::1418620600
 Paramount::1419972200
+Paramount::1421107300
 Roku::ad-partner-solutions-manager-new-york-united-states-c2889b69-a620-4ba2-a6f8-c2dc
 Roku::ad-product-marketing-manager-commerce-media-new-york-united-states
 Roku::ad-sales-partnerships-manager-new-york-united-states
