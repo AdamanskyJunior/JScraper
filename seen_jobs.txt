@@ -178,6 +178,8 @@ Roku::director-commerce-and-performance-partnerships-santa-monica-california-uni
 Roku::director-head-of-industry-media-and-entertainment-santa-monica-california-united
 Roku::head-of-agency-partnerships-new-york-united-states
 Roku::head-of-content-innovation-santa-monica-california-united-states
+Roku::partner-growth-manager-new-york-united-states-4c476ec9-65f6-4404-9e41-ebcae2a221
+Roku::partner-growth-manager-santa-monica-california-united-states-f3c15bd8-9d15-472a-
 Roku::senior-business-development-manager-retail-media-partnerships-bd-new-york-united
 Roku::senior-product-partner-manager-austin-texas-united-states
 Roku::sr-manager-customer-acquisition-paid-media-new-york-united-states
