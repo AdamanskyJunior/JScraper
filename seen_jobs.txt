@@ -123,6 +123,7 @@ NBCUniversal::744000144806799
 NBCUniversal::744000146988588
 NBCUniversal::744000147080339
 NBCUniversal::744000148344951
+NBCUniversal::744000148875144
 Paramount::1361114400
 Paramount::1367475300
 Paramount::1373314500
@@ -181,6 +182,7 @@ Roku::head-of-content-innovation-santa-monica-california-united-states
 Roku::partner-growth-manager-new-york-united-states-4c476ec9-65f6-4404-9e41-ebcae2a221
 Roku::partner-growth-manager-santa-monica-california-united-states-f3c15bd8-9d15-472a-
 Roku::senior-business-development-manager-retail-media-partnerships-bd-new-york-united
+Roku::senior-manager-content-strategy-analysis-santa-monica-california-united-states
 Roku::senior-product-partner-manager-austin-texas-united-states
 Roku::sr-manager-customer-acquisition-paid-media-new-york-united-states
 Spotify::22fedc8b-caf2-416a-9e2d-37f9a04f9973
@@ -257,3 +259,4 @@ Versant::744000145279989
 Versant::744000146244271
 Versant::744000146554339
 Versant::744000147984809
+Versant::744000148853609
