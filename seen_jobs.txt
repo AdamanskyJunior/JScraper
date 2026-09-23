@@ -59,7 +59,9 @@ Apple::200683205
 Apple::200683219
 Apple::200684524
 Apple::200684573
+Apple::200684763
 Apple::200684864
+Apple::200685148
 BritBox::7548758-senior-manager-social-media
 BritBox::7885552-senior-manager-content-acquisitions
 BritBox::8018053-vp-business-development-partnerships
@@ -132,6 +134,8 @@ NBCUniversal::744000148344951
 NBCUniversal::744000148875144
 NBCUniversal::744000150384299
 NBCUniversal::744000150461849
+NBCUniversal::744000151439220
+NBCUniversal::744000151440120
 Paramount::1361114400
 Paramount::1367475300
 Paramount::1373314500
