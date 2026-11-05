@@ -72,8 +72,10 @@ Apple::200688701
 Apple::200690339
 Apple::200691191
 Apple::200691417
+Apple::200692154
 Apple::200692708
 Apple::200692964
+Apple::200693510
 BritBox::7548758-senior-manager-social-media
 BritBox::7885552-senior-manager-content-acquisitions
 BritBox::8018053-vp-business-development-partnerships
@@ -169,6 +171,8 @@ NBCUniversal::744000157186439
 NBCUniversal::744000157231210
 NBCUniversal::744000158599209
 NBCUniversal::744000158799529
+NBCUniversal::744000159740609
+NBCUniversal::744000159932498
 Paramount::1361114400
 Paramount::1367475300
 Paramount::1373314500
@@ -233,6 +237,7 @@ Roku::director-head-of-industry-media-and-entertainment-santa-monica-california-
 Roku::head-of-agency-partnerships-new-york-united-states
 Roku::head-of-content-innovation-santa-monica-california-united-states
 Roku::partner-growth-manager-new-york-united-states-4c476ec9-65f6-4404-9e41-ebcae2a221
+Roku::partner-growth-manager-santa-monica-california-united-states-6d332b71-51ff-4ca8-
 Roku::partner-growth-manager-santa-monica-california-united-states-f3c15bd8-9d15-472a-
 Roku::senior-business-development-manager-retail-media-partnerships-bd-new-york-united
 Roku::senior-manager-content-strategy-analysis-santa-monica-california-united-states
